@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1014">
+<title>小妖养成</title>
+<style>
+  :root{
+    --bg:#0d1014; --panel:#151a21; --panel2:#1b222b; --line:#2a333f;
+    --text:#d8dee6; --dim:#7d8896; --gold:#d8b26a; --gold-dim:#8a7442;
+    --jade:#6fb6a3; --rose:#c96a7a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(900px 500px at 50% -10%, #1a222c 0%, transparent 60%),
+      linear-gradient(180deg,#0d1014,#0a0c10 60%,#0b0e12);
+    color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100%;
+  }
+  .app{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .title{font-family:"Songti SC","SimSun",serif;font-size:22px;letter-spacing:2px;color:var(--gold)}
+  .sub{font-size:12px;color:var(--dim);letter-spacing:1px}
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;
+  }
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .name{font-size:17px;letter-spacing:1px}
+  .stage{font-size:12px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:999px;padding:2px 10px}
+  .moodline{font-size:12px;color:var(--dim);margin-top:10px;line-height:1.7}
+  .bar{height:6px;border-radius:999px;background:#0b0f14;overflow:hidden;margin-top:6px}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-dim),var(--gold));transition:width .3s ease}
+  .bar.jade > i{background:linear-gradient(90deg,#3d6b60,var(--jade))}
+  .culnum{font-size:12px;color:var(--dim);margin-top:6px;display:flex;justify-content:space-between}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{background:#11161d;border:1px solid #222b36;border-radius:10px;padding:10px 12px}
+  .stat .k{font-size:11px;color:var(--dim);letter-spacing:2px}
+  .stat .v{font-size:18px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  button{
+    font-family:inherit;font-size:14px;color:var(--text);
+    background:#1a212a;border:1px solid var(--line);border-radius:10px;
+    padding:12px 10px;cursor:pointer;transition:transform .08s ease,background .2s,border-color .2s;
+    position:relative;overflow:hidden;
+  }
+  button:hover:not(:disabled){background:#212a35;border-color:#3a4657}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.4;cursor:default}
+  button .cd{position:absolute;left:0;bottom:0;height:2px;background:var(--gold);width:0}
+  .btn-label{display:block;font-size:14px}
+  .btn-desc{display:block;font-size:11px;color:var(--dim);margin-top:3px}
+  .event{border-color:var(--gold-dim);background:linear-gradient(180deg,#1d1a14,#151a21)}
+  .event .etitle{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:8px}
+  .event .etext{font-size:14px;line-height:1.9;color:#cfd6de}
+  .event .opts{display:grid;gap:8px;margin-top:12px}
+  .event .opts button{text-align:left;padding:10px 12px;font-size:13px}
+  .log{
+    font-family:"Cascadia Mono","Consolas","Noto Sans Mono",monospace;
+    font-size:12.5px;line-height:1.9;color:#9aa6b4;
+    max-height:260px;overflow:auto;padding-right:6px;
+  }
+  .log p{margin:0;animation:fade .4s ease}
+  .log p .t{color:#4e5a68;margin-right:8px}
+  .log p.hi{color:var(--gold)}
+  .log p.bad{color:var(--rose)}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+  .ach{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .badge{
+    background:#11161d;border:1px solid #222b36;border-radius:10px;
+    padding:9px 6px;text-align:center;line-height:1.45;transition:.35s;
+  }
+  .badge .bn{display:block;font-size:12px;color:#4d5866;transition:.35s}
+  .badge .bd{display:block;font-size:10px;color:#3d4653;margin-top:2px}
+  .badge.on{background:#1d1a14;border-color:var(--gold-dim)}
+  .badge.on .bn{color:var(--gold)}
+  .badge.on .bd{color:#9a8a68}
+  .achhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .achhead .t{font-size:12px;letter-spacing:2px;color:var(--gold)}
+  .achhead .c{font-size:11px;color:var(--dim)}
+  #soundBtn{
+    background:#141a22;border:1px solid var(--line);border-radius:999px;
+    color:var(--dim);font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit;
+  }
+  #soundBtn.on{color:var(--gold);border-color:var(--gold-dim)}
+  .foot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--dim);margin-top:4px}
+  .linkbtn{background:none;border:none;color:var(--dim);font-size:11px;padding:4px;text-decoration:underline;cursor:pointer}
+  .modal{
+    position:fixed;inset:0;background:rgba(6,8,11,.86);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;padding:20px;z-index:10;
+  }
+  .modal[hidden]{display:none}
+  .card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h2{font-family:"Songti SC","SimSun",serif;font-size:20px;color:var(--gold);margin:0 0 8px;letter-spacing:2px}
+  .card p{font-size:13px;color:var(--dim);line-height:1.8;margin:0 0 16px}
+  .card input{
+    width:100%;background:#0f141a;border:1px solid var(--line);border-radius:10px;
+    color:var(--text);font-family:inherit;font-size:15px;padding:11px 12px;outline:none;
+  }
+  .card input:focus{border-color:var(--gold-dim)}
+  .card .go{width:100%;margin-top:14px;background:linear-gradient(180deg,#3a3122,#2a2418);border-color:var(--gold-dim);color:var(--gold)}
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:#1c232c;border:1px solid var(--gold-dim);color:var(--gold);
+    padding:10px 16px;border-radius:999px;font-size:12.5px;opacity:0;transition:.35s;pointer-events:none;z-index:20;
+    max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:520px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .title{font-size:19px}
+    .app{padding:16px 12px 40px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title">小妖养成</div>
+    <div class="sub" style="display:flex;gap:10px;align-items:center">
+      <span id="clock">—</span>
+      <button id="soundBtn" class="on">音效 开</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <div class="name" id="nameEl">—</div>
+        <div class="sub" id="stageDesc">—</div>
+      </div>
+      <div class="stage" id="stageEl">卵</div>
+    </div>
+    <div class="moodline">
+      修为 <span id="rateEl">0.0</span> / 秒　·　心情 <span id="moodEl">0</span>
+    </div>
+    <div class="bar"><i id="culBar"></i></div>
+    <div class="culnum"><span id="culEl">0</span><span id="nextEl">—</span></div>
+    <div class="bar jade" style="margin-top:12px"><i id="moodBar"></i></div>
+  </section>
+
+  <section class="panel stats">
+    <div class="stat"><div class="k">灵力</div><div class="v" id="s-ling">0</div></div>
+    <div class="stat"><div class="k">体魄</div><div class="v" id="s-ti">0</div></div>
+    <div class="stat"><div class="k">灵智</div><div class="v" id="s-zhi">0</div></div>
+    <div class="stat"><div class="k">亲密</div><div class="v" id="s-qin">0</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="actions" id="actions"></div>
+  </section>
+
+  <section class="panel event" id="eventPanel" hidden>
+    <div class="etitle" id="evTitle">—</div>
+    <div class="etext" id="evText">—</div>
+    <div class="opts" id="evOpts"></div>
+  </section>
+
+  <section class="panel">
+    <div class="log" id="logEl"></div>
+  </section>
+
+  <section class="panel">
+    <div class="achhead">
+      <span class="t">成 就</span>
+      <span class="c" id="achCount">0 / 20</span>
+    </div>
+    <div class="ach" id="achGrid"></div>
+  </section>
+
+  <div class="foot">
+    <span id="saveHint">自动保存</span>
+    <button class="linkbtn" id="resetBtn">重开一世</button>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <h2>一枚卵</h2>
+    <p>你在山里捡到一枚温热的卵。它在你掌心轻轻动了一下。<br>给它起个名字吧。</p>
+    <input id="nameInput" maxlength="8" placeholder="比如：阿团" autocomplete="off">
+    <button class="go" id="startBtn">开始养成</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = "xiaoyao.save.v1";
+  var HOUR = 3600e3;
+
+  // ---------- 配置 ----------
+  var STAGES = [
+    { n: "卵",   t: 0,    r: 0.45, d: "一枚安静的卵，偶尔轻轻晃动。" },
+    { n: "幼生", t: 150,  r: 0.8,  d: "破壳了，小小一团，怕光，总往你袖子里钻。" },
+    { n: "少年", t: 700,  r: 1.3,  d: "开始学着人的样子，会偷偷看你，被你发现就装睡。" },
+    { n: "化形", t: 2400, r: 2.1,  d: "能化作人形了，眉眼居然有点像你。" },
+    { n: "大成", t: 7000, r: 3.4,  d: "身上有了山的影子，风绕着它走，却还是回来蹭你手心。" }
+  ];
+
+  var ACTIONS = [
+    { id: "med", name: "打坐", desc: "灵力 +6　心情 −2", cd: 3000,
+      run: function () { st().ling += 6; state.mood -= 2; return ["你陪它静坐了一会儿。", "normal"]; } },
+    { id: "feed", name: "喂食", desc: "体魄 +6　心情 +6", cd: 5000,
+      run: function () { st().ti += 6; state.mood += 6; return ["它吃得很快，然后盯着你，像还想要。", "normal"]; } },
+    { id: "play", name: "逗它", desc: "亲密 +6　心情 +9", cd: 4000,
+      run: function () { st().qin += 6; state.mood += 9; state.cul += 3; return ["你们滚作一团。它笑得没心没肺。", "normal"]; } },
+    { id: "study", name: "教它认字", desc: "灵智 +5　心情 −3", cd: 6500,
+      run: function () { st().zhi += 5; state.mood -= 3; return ["它在沙地上写了个歪歪扭扭的字。", "normal"]; } }
+  ];
+
+  var EVENTS = [
+    { id: "moon", min: 0, once: true, title: "异象", text: "夜里，卵壳上浮起一层淡淡的月光纹路，像有东西在里面翻身。", opts: [
+      { label: "把手覆上去，分它一点灵气", eff: { ling: 4, qin: 6, mood: 5 }, res: "卵安静下来。你手心却烫了一下。" },
+      { label: "由它去，别打扰", eff: { zhi: 3, mood: -2 }, res: "纹路自己慢慢淡了。" }
+    ]},
+    { id: "rain", min: 1, title: "夜雨", text: "外面下起大雨。它缩在窗边，看着水痕往下爬，忽然回头看你。", opts: [
+      { label: "抱到怀里", eff: { qin: 8, mood: 10 }, res: "它把脸埋进你的衣服，很久没有动。" },
+      { label: "教它听雨的声音", eff: { zhi: 4, ling: 2 }, res: "它闭着眼，学着你的样子听。" }
+    ]},
+    { id: "fox", min: 1, title: "狐狸", text: "一只狐狸蹲在院墙上看你们。它开口说了句话，你听不懂，小妖却炸了毛。", opts: [
+      { label: "护在身后", eff: { ti: 3, qin: 7 }, res: "狐狸笑了笑，走了。小妖的手一直抓着你的衣角。" },
+      { label: "让它们自己谈", eff: { zhi: 6, mood: -4 }, res: "它们用你听不懂的话说了很久。之后它沉默了一整夜。" }
+    ]},
+    { id: "dream", min: 2, title: "同梦", text: "你梦见一座很高的山。山顶站着个人，背对着你。醒来时，小妖正趴在你枕边看你。", opts: [
+      { label: "把这个梦告诉它", eff: { qin: 6, zhi: 3 }, res: "它愣了一下，说：我也梦见了。" },
+      { label: "什么都不说", eff: { ling: 5, mood: -3 }, res: "那天的风很冷。它一直没问。" }
+    ]},
+    { id: "sick", min: 1, title: "发热", text: "它蜷在角落，额头烫得吓人。", opts: [
+      { label: "守一整夜", eff: { qin: 9, ti: -2, mood: 4 }, res: "天亮时烧退了。它睁眼第一件事是找你。" },
+      { label: "用灵气压下去", eff: { ling: -6, ti: 4, mood: -2 }, res: "它好了，但一整天都不太说话。" }
+    ]},
+    { id: "stranger", min: 3, title: "来客", text: "一个背着剑的人站在门口，说它不该存在，要带它走。", opts: [
+      { label: "挡在门前", eff: { ti: 5, qin: 10, mood: -6 }, res: "剑客看了你很久，最后收剑走了。小妖在你背后发着抖。" },
+      { label: "问它想不想走", eff: { zhi: 8, qin: 4 }, res: "它想了很久，说：我留下。剑客点点头，转身下山。" }
+    ]},
+    { id: "gift", min: 2, title: "回礼", text: "它把什么东西藏在背后，脸有点红。", opts: [
+      { label: "伸手接着", eff: { qin: 8, mood: 8 }, res: "是一颗温热的、被磨得发亮的石子。它说这是它的第一颗牙。" },
+      { label: "假装没看见", eff: { qin: 3, mood: -2 }, res: "它把东西收了回去，再没提过。" }
+    ]},
+    { id: "star", min: 4, title: "星夜", text: "它已经比你高了，却还是蹲下来，跟你平视。", opts: [
+      { label: "摸摸它的头", eff: { qin: 10, mood: 8 }, res: "它闭上眼，很久。你想起它还是蛋的时候。" },
+      { label: "问它要去哪", eff: { zhi: 6, ling: 4 }, res: "它说：山那边还有山。但它还是留了下来。" }
+    ]},
+    { id: "cold", min: 1, title: "漏风的夜", text: "屋顶漏风。半夜醒来，你发现被子歪到你这边，它缩成一团，把自己那边的被角也往你身上推。", opts: [
+      { label: "把被子拉回去，一起盖", eff: { qin: 8, mood: 8 }, res: "它醒了，没说话，往你这边挪了挪。" },
+      { label: "假装没醒", eff: { zhi: 3, mood: -3 }, res: "天亮时它已经冻得说不出话，还在笑。" }
+    ]},
+    { id: "bird", min: 1, title: "撞窗", text: "一只鸟撞在窗上，死了。它蹲在旁边看了很久，问你：「它疼吗？」", opts: [
+      { label: "说疼，然后一起把它埋了", eff: { qin: 6, zhi: 4 }, res: "它挖坑挖得很认真，指甲里全是土。" },
+      { label: "说鸟没有感觉", eff: { ling: 4, mood: -5 }, res: "它「哦」了一声，那天没再靠近窗户。" }
+    ]},
+    { id: "plum", min: 1, title: "折梅", text: "院里的梅开了。它踩着小凳子折了一枝，插在你桌上那只缺口的瓶子里。", opts: [
+      { label: "夸它插得好看", eff: { qin: 6, mood: 8 }, res: "它一整天都在偷看你的表情。" },
+      { label: "说别乱折花", eff: { zhi: 4, mood: -4 }, res: "第二天，瓶子里换成了一块石头。" }
+    ]},
+    { id: "mirror", min: 2, title: "镜子", text: "它第一次认真地照镜子，转了两圈，忽然问：「这是我吗？」", opts: [
+      { label: "是，这就是你", eff: { zhi: 6, mood: 5 }, res: "它对着镜子笑了一下，又立刻板起脸。" },
+      { label: "你比我好看", eff: { qin: 8, mood: 10 }, res: "它红着脸跑开，躲了半个时辰。" }
+    ]},
+    { id: "nightmare", min: 2, title: "噩梦", text: "半夜它突然坐起来，呼吸很急。你听见它在很小声地数数。", opts: [
+      { label: "陪它坐到天亮", eff: { qin: 9, mood: 6, ti: -2 }, res: "你困得不行，它却一直没敢闭眼。" },
+      { label: "装睡，看它做什么", eff: { zhi: 7, qin: -4 }, res: "它自己数到一千，然后轻轻说了个名字——不是你的。" }
+    ]},
+    { id: "market", min: 2, title: "集市", text: "山下集市，一个穿绸缎的人盯了它很久，出价很高。", opts: [
+      { label: "拉着它就走", eff: { qin: 10, mood: -3 }, res: "走出很远，它才敢回头看那一眼。" },
+      { label: "问它自己怎么想", eff: { zhi: 8, qin: -2 }, res: "它说：「你卖我，我就走。」你说不卖。它笑了。" }
+    ]},
+    { id: "song", min: 2, title: "曲子", text: "它在院子里哼一支曲子，调子很旧，你从来没教过。", opts: [
+      { label: "问是从哪学的", eff: { zhi: 8, mood: -4 }, res: "它停下来，说：「不知道。好像一直在。」" },
+      { label: "跟着一起哼", eff: { qin: 8, mood: 8 }, res: "两个跑调的嗓门，把树上的鸟都吓飞了。" }
+    ]},
+    { id: "lantern", min: 2, title: "灯会", text: "山下有灯会，人声顺着山路飘上来。它趴在墙头看了很久。", opts: [
+      { label: "带它下去看", eff: { qin: 10, mood: 10, ling: -4 }, res: "它攥着你的袖子，在人堆里一句话没说，眼睛很亮。" },
+      { label: "人多，不去", eff: { zhi: 5, mood: -8 }, res: "它说好，然后回屋把所有灯都点上了。" }
+    ]},
+    { id: "letter", min: 3, title: "无名信", text: "门口有封信，没有署名，只写着一个名字——它真正的名字。", opts: [
+      { label: "把信给它", eff: { qin: 6, zhi: 9 }, res: "它看完，把纸叠得很小，塞进了衣襟里。" },
+      { label: "烧掉", eff: { ling: 6, mood: -7 }, res: "火苗窜起来的时候，它站在门口看着，什么也没问。" }
+    ]},
+    { id: "storm", min: 3, title: "引雷", text: "雷雨夜，它站在院子中央，抬手对着天。雷声越来越近。", opts: [
+      { label: "冲出去把它拉回来", eff: { qin: 9, ti: -4, mood: 4 }, res: "你被淋透了，它被你拽得踉跄，却一直在笑。" },
+      { label: "站着看它", eff: { ling: 12, mood: -6 }, res: "一道雷落在它掌心，散了。它回头看你，眼睛是金色的。" }
+    ]},
+    { id: "oldman", min: 3, title: "问路的人", text: "一个老人来问路，临走时看了看院子，说：「你家那小东西，活不过三年。」", opts: [
+      { label: "追上去问清楚", eff: { zhi: 7, mood: -10 }, res: "老人已经不见了。你在山路上站了很久。" },
+      { label: "当他是胡说的", eff: { ling: 4, mood: 5 }, res: "它从屋里探出头，问你怎么了。你说没事。" }
+    ]},
+    { id: "promise", min: 3, title: "那个问题", text: "它忽然问你：「人是不是都会死？」", opts: [
+      { label: "会。所以现在才要好好过", eff: { qin: 8, zhi: 7, mood: -5 }, res: "它点点头，把手放进你手里，很用力。" },
+      { label: "不会", eff: { mood: 6, zhi: -3 }, res: "它笑了，眼睛弯起来。你不敢看它。" }
+    ]},
+    { id: "snow", min: 4, title: "初雪", text: "下雪了。它伸手接雪，雪落在掌心，不化。", opts: [
+      { label: "说这是好事", eff: { ling: 9, mood: 5 }, res: "它把掌心合起来，像捧着什么珍贵的东西。" },
+      { label: "什么也没说", eff: { zhi: 7, mood: -3 }, res: "它转过头看你，雪还在落。" }
+    ]},
+    { id: "return", min: 4, title: "下山", text: "它说想下山一趟，三天就回。行李已经收好了。", opts: [
+      { label: "我等你", eff: { qin: 9, mood: -5 }, res: "它走的时候没回头。第三天傍晚，门口有脚步声。" },
+      { label: "不必回来", eff: { ling: 7, qin: -10 }, res: "它站了很久，然后把行李放下了。" }
+    ]},
+    { id: "final", min: 4, title: "如果", text: "它问：「如果有一天我要走，你会怎么样？」", opts: [
+      { label: "我会等你，一直等", eff: { qin: 10, mood: 6 }, res: "它低下头，很久才说：「那我尽量不走。」" },
+      { label: "我会送你到山脚", eff: { zhi: 9, mood: -4 }, res: "它愣了一下，然后笑了：「嗯，这样也好。」" }
+    ]}
+  ];
+
+  // ---------- 音效 ----------
+  var actx = null;
+  var soundOn = true;
+
+  function initAudio() {
+    if (actx) return;
+    var C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    try { actx = new C(); } catch (e) { actx = null; }
+    if (actx && actx.state === "suspended" && actx.resume) { try { actx.resume(); } catch (e) {} }
+  }
+
+  function tone(freq, dur, type, vol, delay, slideTo) {
+    if (!soundOn || !actx) return;
+    try {
+      var t0 = actx.currentTime + (delay || 0);
+      var o = actx.createOscillator();
+      var g = actx.createGain();
+      o.type = type || "sine";
+      o.frequency.setValueAtTime(freq, t0);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol || 0.06, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g);
+      g.connect(actx.destination);
+      o.start(t0);
+      o.stop(t0 + dur + 0.03);
+    } catch (e) {}
+  }
+
+  var SFX = {
+    click: function () { tone(360, 0.06, "square", 0.022); },
+    act:   function () { tone(520, 0.09, "sine", 0.05); tone(784, 0.12, "sine", 0.032, 0.06); },
+    ev:    function () { tone(587, 0.16, "sine", 0.05); tone(880, 0.2, "sine", 0.035, 0.1); },
+    ach:   function () { var a = [523, 659, 784, 1047]; for (var i = 0; i < a.length; i++) tone(a[i], 0.18, "triangle", 0.05, i * 0.085); },
+    stage: function () { var a = [392, 523, 659, 784]; for (var i = 0; i < a.length; i++) tone(a[i], 0.28, "sine", 0.05, i * 0.1); },
+    off:   function () { tone(196, 0.7, "sine", 0.035); tone(294, 0.7, "sine", 0.022, 0.12); },
+    deny:  function () { tone(160, 0.09, "square", 0.022); }
+  };
+
+  // ---------- 成就 ----------
+  var ACHIEVEMENTS = [
+    { id: "birth",    n: "有了名字",   d: "给它取名",        c: function () { return true; } },
+    { id: "feed20",   n: "第一顿饭",   d: "体魄到 20",       c: function (s) { return s.ti >= 20; } },
+    { id: "stage2",   n: "会走会跳",   d: "进入幼生",        c: function (s) { return s.cul >= 150; } },
+    { id: "stage3",   n: "像模像样",   d: "进入少年",        c: function (s) { return s.cul >= 700; } },
+    { id: "stage4",   n: "眉眼像你",   d: "进入化形",        c: function (s) { return s.cul >= 2400; } },
+    { id: "stage5",   n: "山那边的山", d: "进入大成",        c: function (s) { return s.cul >= 7000; } },
+    { id: "qin100",   n: "黏人精",     d: "亲密到 100",      c: function (s) { return s.qin >= 100; } },
+    { id: "zhi100",   n: "小机灵",     d: "灵智到 100",      c: function (s) { return s.zhi >= 100; } },
+    { id: "ling100",  n: "有气息了",   d: "灵力到 100",      c: function (s) { return s.ling >= 100; } },
+    { id: "ti100",    n: "结实",       d: "体魄到 100",      c: function (s) { return s.ti >= 100; } },
+    { id: "all50",    n: "四平八稳",   d: "四项都到 50",     c: function (s) { return s.ling >= 50 && s.ti >= 50 && s.zhi >= 50 && s.qin >= 50; } },
+    { id: "mood100",  n: "心花怒放",   d: "心情满 100",      c: function (s) { return s.mood >= 99.5; } },
+    { id: "med50",    n: "静坐",       d: "打坐 50 次",      c: function (s) { return s.cnt.med >= 50; } },
+    { id: "feed50",   n: "饭桶",       d: "喂食 50 次",      c: function (s) { return s.cnt.feed >= 50; } },
+    { id: "play50",   n: "玩伴",       d: "逗它 50 次",      c: function (s) { return s.cnt.play >= 50; } },
+    { id: "study50",  n: "先生",       d: "教字 50 次",      c: function (s) { return s.cnt.study >= 50; } },
+    { id: "event10",  n: "见证者",     d: "经历 10 件事",    c: function (s) { return s.cnt.events >= 10; } },
+    { id: "event25",  n: "同行",       d: "经历 25 件事",    c: function (s) { return s.cnt.events >= 25; } },
+    { id: "off8",     n: "久别",       d: "离线 8 小时后回来", c: function (s) { return s.offBest >= 8 * HOUR; } },
+    { id: "cul10k",   n: "一万年",     d: "修为到 1 万",     c: function (s) { return s.cul >= 10000; } }
+  ];
+
+  function checkAchievements() {
+    var got = 0;
+    for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+      var a = ACHIEVEMENTS[i];
+      if (state.ach.indexOf(a.id) !== -1) { got++; continue; }
+      var ok = false;
+      try { ok = a.c(state); } catch (e) { ok = false; }
+      if (ok) {
+        state.ach.push(a.id);
+        addLog("成就达成 ·「" + a.n + "」", "hi");
+        toast("成就达成 · " + a.n);
+        SFX.ach();
+        got++;
+      }
+    }
+    return got;
+  }
+
+  function renderAch() {
+    var grid = document.getElementById("achGrid");
+    if (!grid.childElementCount) {
+      for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+        (function (a) {
+          var d = document.createElement("div");
+          d.className = "badge";
+          d.dataset.id = a.id;
+          var n = document.createElement("span");
+          n.className = "bn";
+          n.textContent = a.n;
+          var b = document.createElement("span");
+          b.className = "bd";
+          b.textContent = a.d;
+          d.appendChild(n);
+          d.appendChild(b);
+          grid.appendChild(d);
+        })(ACHIEVEMENTS[i]);
+      }
+    }
+    var n = 0;
+    for (var j = 0; j < grid.children.length; j++) {
+      var el = grid.children[j];
+      if (state.ach.indexOf(el.dataset.id) !== -1) { el.classList.add("on"); n++; }
+      else { el.classList.remove("on"); }
+    }
+    document.getElementById("achCount").textContent = n + " / " + ACHIEVEMENTS.length;
+  }
+
+  // ---------- 状态 ----------
+  var state = null;
+  var renderCount = 0;
+  var toastTimer = null;
+
+  function fresh(name) {
+    return {
+      v: 1, name: name, born: Date.now(), last: Date.now(),
+      cul: 0, mood: 80,
+      ling: 0, ti: 0, zhi: 0, qin: 0,
+      log: [], cd: {}, ev: null, evAt: Date.now() + 50000,
+      seen: {}, ach: [], cnt: { med: 0, feed: 0, play: 0, study: 0, events: 0 },
+      stg: 0, offBest: 0, sound: true
+    };
+  }
+
+  function st() { return state; }
+
+  function stageIndex() {
+    var i = 0;
+    for (var k = 0; k < STAGES.length; k++) if (state.cul >= STAGES[k].t) i = k;
+    return i;
+  }
+
+  function rate() {
+    var base = STAGES[stageIndex()].r;
+    var smart = 1 + state.zhi * 0.02;
+    var moodF = 0.45 + (state.mood / 100) * 0.75;
+    return base * smart * moodF;
+  }
+
+  function fmt(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+    if (n >= 1e4) return (n / 1e4).toFixed(1) + "万";
+    return Math.floor(n).toString();
+  }
+
+  // ---------- 日志 ----------
+  function addLog(text, kind) {
+    state.log.push({ t: Date.now(), s: text, k: kind || "normal" });
+    if (state.log.length > 120) state.log = state.log.slice(-120);
+  }
+
+  function renderLog() {
+    var el = document.getElementById("logEl");
+    if (renderCount === 0) el.innerHTML = "";
+    var list = state.log.slice(renderCount);
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i];
+      var d = new Date(e.t);
+      var hh = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+      var p = document.createElement("p");
+      if (e.k === "hi") p.className = "hi";
+      if (e.k === "bad") p.className = "bad";
+      var ts = document.createElement("span");
+      ts.className = "t";
+      ts.textContent = hh;
+      p.appendChild(ts);
+      p.appendChild(document.createTextNode(e.s));
+      el.appendChild(p);
+    }
+    renderCount = state.log.length;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // ---------- 弹窗 ----------
+  function toast(msg) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 3200);
+  }
+
+  // ---------- 存档 ----------
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (!s || typeof s.cul !== "number") return null;
+      var base = fresh(s.name || "无名");
+      for (var k in base) if (!(k in s)) s[k] = base[k];
+      return s;
+    } catch (e) { return null; }
+  }
+
+  // ---------- 离线收益 ----------
+  function applyOffline() {
+    var gap = Date.now() - state.last;
+    if (gap < 60000) { state.last = Date.now(); return; }
+    var capped = Math.min(gap, 12 * HOUR);
+    var gain = rate() * (capped / 1000);
+    var moodLoss = Math.min(30, (capped / HOUR) * 6);
+    state.cul += gain;
+    state.mood = Math.max(0, state.mood - moodLoss);
+    var h = capped / HOUR;
+    var span = h >= 1 ? h.toFixed(1) + " 小时" : Math.round(capped / 60000) + " 分钟";
+    addLog("你离开了 " + span + "。它自己修炼了一会儿，修为 +" + fmt(gain) + "。", "hi");
+    state.offBest = Math.max(state.offBest || 0, capped);
+    state.last = Date.now();
+    toast("离线 " + span + "，修为 +" + fmt(gain));
+    SFX.off();
+  }
+
+  // ---------- 渲染 ----------
+  function render() {
+    var si = stageIndex();
+    var sg = STAGES[si];
+    document.getElementById("nameEl").textContent = state.name;
+    document.getElementById("stageEl").textContent = sg.n;
+    document.getElementById("stageDesc").textContent = sg.d;
+    document.getElementById("rateEl").textContent = rate().toFixed(1);
+    document.getElementById("moodEl").textContent = Math.round(state.mood);
+    document.getElementById("culEl").textContent = fmt(state.cul);
+
+    var next = STAGES[si + 1];
+    var lo = sg.t, hi = next ? next.t : sg.t;
+    var pct = next ? Math.min(100, ((state.cul - lo) / (hi - lo)) * 100) : 100;
+    document.getElementById("culBar").style.width = pct + "%";
+    document.getElementById("nextEl").textContent = next ? ("下一境界 " + fmt(hi)) : "已至大成";
+    document.getElementById("moodBar").style.width = Math.max(0, Math.min(100, state.mood)) + "%";
+
+    document.getElementById("s-ling").textContent = state.ling;
+    document.getElementById("s-ti").textContent = state.ti;
+    document.getElementById("s-zhi").textContent = state.zhi;
+    document.getElementById("s-qin").textContent = state.qin;
+
+    var d = new Date();
+    document.getElementById("clock").textContent =
+      ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+
+    renderActions();
+    renderEvent();
+    renderLog();
+    renderAch();
+    var sb = document.getElementById("soundBtn");
+    if (sb) {
+      sb.textContent = soundOn ? "音效 开" : "音效 关";
+      if (soundOn) sb.classList.add("on"); else sb.classList.remove("on");
+    }
+  }
+
+  function renderActions() {
+    var box = document.getElementById("actions");
+    if (!box.childElementCount) {
+      for (var i = 0; i < ACTIONS.length; i++) {
+        (function (a) {
+          var b = document.createElement("button");
+          b.dataset.id = a.id;
+          var l = document.createElement("span");
+          l.className = "btn-label";
+          l.textContent = a.name;
+          var dd = document.createElement("span");
+          dd.className = "btn-desc";
+          dd.textContent = a.desc;
+          var cd = document.createElement("i");
+          cd.className = "cd";
+          b.appendChild(l); b.appendChild(dd); b.appendChild(cd);
+          b.addEventListener("click", function () { doAction(a); });
+          box.appendChild(b);
+        })(ACTIONS[i]);
+      }
+    }
+    var now = Date.now();
+    for (var j = 0; j < box.children.length; j++) {
+      var btn = box.children[j];
+      var act = null;
+      for (var k = 0; k < ACTIONS.length; k++) if (ACTIONS[k].id === btn.dataset.id) act = ACTIONS[k];
+      var ready = state.cd[act.id] || 0;
+      var left = ready - now;
+      var bar = btn.querySelector(".cd");
+      if (left > 0) {
+        btn.disabled = true;
+        bar.style.width = "0%";
+        btn.querySelector(".btn-desc").textContent = "冷却 " + (left / 1000).toFixed(1) + "s";
+      } else {
+        btn.disabled = false;
+        bar.style.width = "0%";
+        btn.querySelector(".btn-desc").textContent = act.desc;
+      }
+    }
+  }
+
+  function renderEvent() {
+    var panel = document.getElementById("eventPanel");
+    if (!state.ev) { panel.hidden = true; return; }
+    panel.hidden = false;
+    document.getElementById("evTitle").textContent = state.ev.title;
+    document.getElementById("evText").textContent = state.ev.text;
+    var box = document.getElementById("evOpts");
+    box.innerHTML = "";
+    for (var i = 0; i < state.ev.opts.length; i++) {
+      (function (o, idx) {
+        var b = document.createElement("button");
+        b.textContent = o.label;
+        b.addEventListener("click", function () { choose(idx); });
+        box.appendChild(b);
+      })(state.ev.opts[i], i);
+    }
+  }
+
+  // ---------- 交互 ----------
+  function doAction(a) {
+    initAudio();
+    var now = Date.now();
+    if ((state.cd[a.id] || 0) > now) { SFX.deny(); return; }
+    var r = a.run();
+    state.cd[a.id] = now + a.cd;
+    state.cnt[a.id] = (state.cnt[a.id] || 0) + 1;
+    addLog(r[0], r[1]);
+    SFX.act();
+    checkAchievements();
+    render();
+    save();
+  }
+
+  function choose(idx) {
+    initAudio();
+    var o = state.ev.opts[idx];
+    if (o.eff) {
+      if (o.eff.ling) state.ling += o.eff.ling;
+      if (o.eff.ti) state.ti += o.eff.ti;
+      if (o.eff.zhi) state.zhi += o.eff.zhi;
+      if (o.eff.qin) state.qin += o.eff.qin;
+      if (o.eff.mood) state.mood = Math.max(0, Math.min(100, state.mood + o.eff.mood));
+    }
+    addLog("【" + state.ev.title + "】" + o.res, "hi");
+    state.cnt.events = (state.cnt.events || 0) + 1;
+    state.ev = null;
+    state.evAt = Date.now() + 60000 + Math.random() * 90000;
+    SFX.ev();
+    checkAchievements();
+    render();
+    save();
+  }
+
+  function triggerEvent() {
+    var si = stageIndex();
+    var pool = [];
+    for (var i = 0; i < EVENTS.length; i++) {
+      var e = EVENTS[i];
+      if (e.min > si) continue;
+      if (e.once && state.seen[e.id]) continue;
+      pool.push(e);
+    }
+    if (!pool.length) { state.evAt = Date.now() + 120000; return; }
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    state.seen[pick.id] = true;
+    state.ev = { title: pick.title, text: pick.text, opts: pick.opts };
+    addLog("—— " + pick.title + " ——", "hi");
+    render();
+  }
+
+  // ---------- 主循环 ----------
+  function tick() {
+    var now = Date.now();
+    var dt = Math.min(5, (now - state.last) / 1000);
+    if (dt > 0) {
+      state.cul += rate() * dt;
+      state.mood = Math.max(0, state.mood - 0.06 * dt);
+      state.last = now;
+    }
+    var si = stageIndex();
+    if (si > (state.stg || 0)) {
+      state.stg = si;
+      addLog("境界突破 —— " + STAGES[si].n + "。", "hi");
+      toast("境界突破 · " + STAGES[si].n);
+      SFX.stage();
+    }
+    if (!state.ev && now >= state.evAt) triggerEvent();
+    checkAchievements();
+    render();
+  }
+
+  // ---------- 启动 ----------
+  function boot() {
+    var s = load();
+    if (s) {
+      state = s;
+      soundOn = s.sound !== false;
+      applyOffline();
+      renderCount = 0;
+      render();
+      save();
+      setInterval(function () { tick(); }, 1000);
+      setInterval(function () { save(); }, 5000);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) save();
+      });
+      window.addEventListener("beforeunload", save);
+      return;
+    }
+
+    document.getElementById("modal").hidden = false;
+    var input = document.getElementById("nameInput");
+    var start = function () {
+      var nm = (input.value || "").trim().slice(0, 8) || "阿团";
+      state = fresh(nm);
+      addLog("你给它取名「" + nm + "」。", "hi");
+      addLog("卵在你掌心轻轻动了一下。", "normal");
+      document.getElementById("modal").hidden = true;
+      renderCount = 0;
+      checkAchievements();
+      render();
+      save();
+      setInterval(function () { tick(); }, 1000);
+      setInterval(function () { save(); }, 5000);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) save();
+      });
+      window.addEventListener("beforeunload", save);
+    };
+    document.getElementById("startBtn").addEventListener("click", start);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") start(); });
+    input.focus();
+  }
+
+  document.getElementById("soundBtn").addEventListener("click", function () {
+    initAudio();
+    soundOn = !soundOn;
+    if (state) { state.sound = soundOn; save(); }
+    if (soundOn) SFX.click();
+    render();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("确定重开？这一世的记录会全部消失。")) return;
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    location.reload();
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

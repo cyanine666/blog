@@ -1,0 +1,92 @@
+baseURL: "http://localhost:1313/"
+relativeURLs: true
+canonifyURLs: false
+locale: "zh-CN"
+defaultContentLanguage: "zh"
+title: "My Blog"
+theme: "PaperMod"
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+enableEmoji: true
+hasCJKLanguage: true
+
+pagination:
+  pagerSize: 10
+
+minify:
+  disableXML: true
+  minifyOutput: true
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+params:
+  env: production
+  title: "My Blog"
+  description: "记录技术与生活"
+  keywords: [Blog, Hugo, Notes]
+  author: "Qinglan He"
+  DateFormat: "2006-01-02"
+  defaultTheme: auto
+  disableThemeToggle: false
+
+  ShowReadingTime: true
+  ShowShareButtons: true
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowWordCount: true
+  ShowRssButtonInSectionTermList: true
+  UseHugoToc: true
+  disableSpecial1stPost: false
+  disableScrollToTop: false
+  comments: false
+  hidemeta: false
+  hideSummary: false
+  showtoc: false
+  tocopen: false
+
+  homeInfoParams:
+    Title: "你好，我是 Qinglan 👋"
+    Content: "这里记录一些技术笔记、折腾过程和生活片段。用 Hugo 驱动，PaperMod 主题。"
+
+  socialIcons:
+    - name: github
+      url: "https://github.com/"
+    - name: rss
+      url: "index.xml"
+
+menu:
+  main:
+    - identifier: posts
+      name: 文章
+      url: /posts/
+      weight: 10
+    - identifier: archives
+      name: 归档
+      url: /archives/
+      weight: 20
+    - identifier: tags
+      name: 标签
+      url: /tags/
+      weight: 30
+    - identifier: search
+      name: 搜索
+      url: /search/
+      weight: 40
+    - identifier: games
+      name: 游戏
+      url: /games/xiaoyao/
+      weight: 50
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false
